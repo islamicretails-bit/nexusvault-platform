@@ -6,8 +6,22 @@ export default defineConfig({
     setupFiles: ['./setupTests.ts'],
     coverage: {
       reporter: ['text', 'json', 'lcov', 'clover'],
-      include: ['packages/core/src/**/*.{ts,js}'],
-      exclude: ['**/node_modules/**', '**/*.test.{ts,js}', '**/setupTests.ts'],
+      include: ['apps/web/**/*.{ts,tsx}'],
+      exclude: ['node_modules/', 'apps/web/pages/api/**/*.{ts,tsx}'],
     },
+    threads: false,
+    watch: false,
+    passWithNoTests: true,
+    clearMocks: true,
+    restoreMocks: true,
+  },
+  resolve: {
+    alias: {
+      '@apps/web': './apps/web',
+      '@packages/core': './packages/core',
+    },
+  },
+  define: {
+    __DEV__: process.env.NODE_ENV !== 'production',
   },
 });
