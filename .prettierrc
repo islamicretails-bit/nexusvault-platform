@@ -9,15 +9,5 @@
   "jsxBracketSameLine": true,
   "arrowParens": "always",
   "proseWrap": "preserve",
-  "htmlWhitespaceSensitivity": "ignore",
-  "endOfLine": "lf",
-  "overrides": [
-    {
-      "files": "*.json",
-      "options": {
-        "printWidth": 80,
-        "tabWidth": 2
-      }
-    }
-  ]
+  "endOfLine": "auto"
 }
