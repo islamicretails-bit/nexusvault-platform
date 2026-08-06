@@ -4,25 +4,35 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 const logger = new Logger('Error Middleware');
 
-export function errorHandlerMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
-  if (res.headersSent) {
-    return next(error);
+export function errorHandler(
+  error: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  if (error instanceof HttpException) {
+    const status = error.getStatus();
+    const message = error.message;
+    logger.error(`HTTP Exception: ${status} - ${message}`);
+    res.status(status).json({ message });
+  } else {
+    logger.error('Internal Server Error:', error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Internal Server Error',
+    });
   }
-
-  const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
-  const message = error.message || 'Internal Server Error';
-
-  logger.error(`Error ${status}: ${message}`, error.stack);
-
-  res.status(status).json({
-    error: {
-      status,
-      message,
-    },
-  });
 }
 
-export function notFoundHandlerMiddleware(req: Request, res: Response, next: NextFunction) {
+export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
   const error = new HttpException('Not Found', HttpStatus.NOT_FOUND);
-  errorHandlerMiddleware(error, req, res, next);
+  errorHandler(error, req, res, next);
+}
+
+export function methodNotAllowedHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const error = new HttpException('Method Not Allowed', HttpStatus.METHOD_NOT_ALLOWED);
+  errorHandler(error, req, res, next);
 }
