@@ -1,0 +1,35 @@
+FROM node:16 as builder
+
+# Set working directory to /app
+WORKDIR /app
+
+# Copy package*.json files to /app
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy application code to /app
+COPY . .
+
+# Build Next.js application
+RUN npm run build
+
+# Create a new stage for the production environment
+FROM node:16
+
+# Set working directory to /app
+WORKDIR /app
+
+# Copy the pre-built application from the previous stage
+COPY --from=builder /app .
+
+# Expose port 3000 for the Next.js application
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV production
+ENV PORT 3000
+
+# Run the command to start the Next.js application
+CMD ["npm", "start"]
