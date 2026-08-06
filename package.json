@@ -1,0 +1,31 @@
+{
+  "name": "nexusvault-platform",
+  "version": "1.0.0",
+  "description": "NexusVault Platform",
+  "main": "index.ts",
+  "scripts": {
+    "build": "npm run build:web",
+    "build:web": "npm run --prefix apps/web build",
+    "start": "npm run start:web",
+    "start:web": "npm run --prefix apps/web start",
+    "test": "npm run test:web",
+    "test:web": "npm run --prefix apps/web test",
+    "lint": "npm run lint:web",
+    "lint:web": "npm run --prefix apps/web lint",
+    "fix:netlify": "npm run fix:netlify:web",
+    "fix:netlify:web": "npm run --prefix apps/web fix:netlify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@netlify/cli": "^11.4.1"
+  },
+  "workspaces": [
+    "apps/web"
+  ]
+}
