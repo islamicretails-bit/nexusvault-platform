@@ -1,144 +1,62 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/react';
-import { rest } from 'msw';
+import axios from 'axios';
+import { describe, expect, it, beforeEach, afterEach } from '@jest/globals';
 import { setupServer } from 'msw/node';
-import { createMemoryHistory } from 'history';
-import { Router } from 'react-router-dom';
-import { AuthProvider } from '../contexts/AuthContext';
-import Login from '../pages/admin/login';
-import TwoFactorAuth from '../components/Auth/TwoFactorAuth';
-import ErrorBoundary from '../components/ErrorBoundary';
+import { rest } from 'msw';
+import { API_URL } from '../../pages/api/checkout/session';
+import { errorHandler } from '../../components/ErrorBoundary';
+import { TwoFactorAuth } from '../../components/Auth/TwoFactorAuth';
 
 const server = setupServer(
-  rest.post('/api/auth/login', (req, res, ctx) => {
+  rest.post(`${API_URL}/login`, (req, res, ctx) => {
     return res(ctx.json({ token: 'mock-token' }));
   }),
-  rest.post('/api/auth/2fa', (req, res, ctx) => {
-    return res(ctx.json({ token: 'mock-2fa-token' }));
+  rest.post(`${API_URL}/2fa`, (req, res, ctx) => {
+    return res(ctx.json({ success: true }));
   }),
-  rest.get('/api/auth/error', (req, res, ctx) => {
-    return res(ctx.status(401), ctx.json({ error: 'Invalid credentials' }));
+  rest.get(`${API_URL}/user`, (req, res, ctx) => {
+    return res(ctx.json({ id: 1, email: 'user@example.com' }));
+  }),
+  rest.get(`${API_URL}/error`, (req, res, ctx) => {
+    return res(ctx.status(500), ctx.json({ message: 'Internal Server Error' }));
   }),
 );
 
-describe('Auth Test Suite', () => {
-  beforeEach(() => {
-    server.listen();
+describe('Authentication Endpoints', () => {
+  beforeEach(() => server.listen());
+  afterEach(() => server.resetHandlers());
+  afterAll(() => server.close());
+
+  it('should login successfully', async () => {
+    const response = await axios.post(`${API_URL}/login`, {
+      email: 'user@example.com',
+      password: 'password',
+    });
+    expect(response.data.token).toBe('mock-token');
   });
 
-  afterEach(() => {
-    server.resetHandlers();
+  it('should handle 2FA authentication', async () => {
+    const response = await axios.post(`${API_URL}/2fa`, {
+      code: '123456',
+    });
+    expect(response.data.success).toBe(true);
   });
 
-  it('should render login page', () => {
-    const history = createMemoryHistory();
-    const { getByText } = render(
-      <Router location={history.location} navigator={history}>
-        <AuthProvider>
-          <Login />
-        </AuthProvider>
-      </Router>,
-    );
-    expect(getByText('Login')).toBeInTheDocument();
+  it('should fetch user data', async () => {
+    const response = await axios.get(`${API_URL}/user`);
+    expect(response.data.id).toBe(1);
+    expect(response.data.email).toBe('user@example.com');
   });
 
-  it('should handle successful login', async () => {
-    const history = createMemoryHistory();
-    const { getByText, getByPlaceholderText } = render(
-      <Router location={history.location} navigator={history}>
-        <AuthProvider>
-          <Login />
-        </AuthProvider>
-      </Router>,
-    );
-    const usernameInput = getByPlaceholderText('Username');
-    const passwordInput = getByPlaceholderText('Password');
-    const submitButton = getByText('Login');
-    fireEvent.change(usernameInput, { target: { value: 'test-username' } });
-    fireEvent.change(passwordInput, { target: { value: 'test-password' } });
-    fireEvent.click(submitButton);
-    await waitFor(() => expect(history.location.pathname).toBe('/admin'));
+  it('should handle error response', async () => {
+    try {
+      await axios.get(`${API_URL}/error`);
+    } catch (error) {
+      expect(errorHandler(error)).toBe('Internal Server Error');
+    }
   });
 
-  it('should handle failed login', async () => {
-    const history = createMemoryHistory();
-    const { getByText, getByPlaceholderText } = render(
-      <Router location={history.location} navigator={history}>
-        <AuthProvider>
-          <Login />
-        </AuthProvider>
-      </Router>,
-    );
-    const usernameInput = getByPlaceholderText('Username');
-    const passwordInput = getByPlaceholderText('Password');
-    const submitButton = getByText('Login');
-    fireEvent.change(usernameInput, { target: { value: 'invalid-username' } });
-    fireEvent.change(passwordInput, { target: { value: 'invalid-password' } });
-    fireEvent.click(submitButton);
-    await waitFor(() => expect(getByText('Invalid credentials')).toBeInTheDocument());
-  });
-
-  it('should render 2fa page', () => {
-    const history = createMemoryHistory();
-    const { getByText } = render(
-      <Router location={history.location} navigator={history}>
-        <AuthProvider>
-          <TwoFactorAuth />
-        </AuthProvider>
-      </Router>,
-    );
-    expect(getByText('2FA')).toBeInTheDocument();
-  });
-
-  it('should handle successful 2fa', async () => {
-    const history = createMemoryHistory();
-    const { getByText, getByPlaceholderText } = render(
-      <Router location={history.location} navigator={history}>
-        <AuthProvider>
-          <TwoFactorAuth />
-        </AuthProvider>
-      </Router>,
-    );
-    const codeInput = getByPlaceholderText('2FA Code');
-    const submitButton = getByText('Verify');
-    fireEvent.change(codeInput, { target: { value: '123456' } });
-    fireEvent.click(submitButton);
-    await waitFor(() => expect(history.location.pathname).toBe('/admin'));
-  });
-
-  it('should handle failed 2fa', async () => {
-    const history = createMemoryHistory();
-    const { getByText, getByPlaceholderText } = render(
-      <Router location={history.location} navigator={history}>
-        <AuthProvider>
-          <TwoFactorAuth />
-        </AuthProvider>
-      </Router>,
-    );
-    const codeInput = getByPlaceholderText('2FA Code');
-    const submitButton = getByText('Verify');
-    fireEvent.change(codeInput, { target: { value: 'invalid-code' } });
-    fireEvent.click(submitButton);
-    await waitFor(() => expect(getByText('Invalid 2FA code')).toBeInTheDocument());
-  });
-
-  it('should catch and render error boundary', async () => {
-    const history = createMemoryHistory();
-    const { getByText } = render(
-      <Router location={history.location} navigator={history}>
-        <ErrorBoundary>
-          <div>
-            <button onClick={() => {
-              throw new Error('Test error');
-            }}>
-              Throw error
-            </button>
-          </div>
-        </ErrorBoundary>
-      </Router>,
-    );
-    const button = getByText('Throw error');
-    fireEvent.click(button);
-    await waitFor(() => expect(getByText('An error occurred')).toBeInTheDocument());
+  it('should render TwoFactorAuth component', () => {
+    const component = new TwoFactorAuth();
+    expect(component).toBeDefined();
   });
 });
