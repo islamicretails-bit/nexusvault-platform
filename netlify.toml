@@ -21,12 +21,9 @@
 
 [context.deploy-preview]
   command = "npm run build"
-  publish = "apps/web/out"
 
 [context.branch-deploy]
   command = "npm run build"
-  publish = "apps/web/out"
 
 [context.production]
   command = "npm run build"
-  publish = "apps/web/out"
