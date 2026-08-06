@@ -1,67 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { SvgIcon } from '@material-ui/core';
-import { CheckCircle, Error, HourglassEmpty } from '@material-ui/icons';
-import { useAuth } from '../../hooks/useAuth';
-import { TwoFactorAuthProps } from '../../types/auth';
-import styles from './TwoFactorAuth.module.css';
+import { TwoFactorAuthStatus } from '../../enums/TwoFactorAuthStatus';
+import { SvgCheckCircle, SvgErrorCircle, SvgWarningCircle } from '../SvgIcons';
 
-const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({ onVerify, onError }) => {
-  const { t } = useTranslation();
+interface TwoFactorAuthProps {
+  onAuthSuccess: () => void;
+}
+
+const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({ onAuthSuccess }) => {
+  const { user, twoFactorAuth, verifyTwoFactorAuth } = useAuth();
   const navigate = useNavigate();
-  const { user, twoFactorAuthStatus } = useAuth();
   const [code, setCode] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusIcon, setStatusIcon] = useState<JSX.Element | null>(null);
+  const [status, setStatus] = useState<TwoFactorAuthStatus>(TwoFactorAuthStatus.IDLE);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (twoFactorAuthStatus === 'pending') {
-      setStatusIcon(<HourglassEmpty />);
-    } else if (twoFactorAuthStatus === 'success') {
-      setStatusIcon(<CheckCircle />);
-    } else if (twoFactorAuthStatus === 'error') {
-      setStatusIcon(<Error />);
+    if (twoFactorAuth && twoFactorAuth.enabled) {
+      setStatus(TwoFactorAuthStatus.PENDING);
+    } else {
+      navigate('/login');
     }
-  }, [twoFactorAuthStatus]);
+  }, [twoFactorAuth, navigate]);
 
-  const handleVerify = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
+  const handleVerify = async () => {
     try {
-      await onVerify(code);
-    } catch (error) {
-      onError(error);
-    } finally {
-      setIsSubmitting(false);
+      await verifyTwoFactorAuth(code);
+      onAuthSuccess();
+    } catch (error: any) {
+      setError(error.message);
+      setStatus(TwoFactorAuthStatus.ERROR);
     }
   };
 
-  const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCode(event.target.value);
+  const handleResend = async () => {
+    try {
+      await twoFactorAuth?.resendCode();
+      setStatus(TwoFactorAuthStatus.PENDING);
+    } catch (error: any) {
+      setError(error.message);
+      setStatus(TwoFactorAuthStatus.ERROR);
+    }
+  };
+
+  const getIcon = () => {
+    switch (status) {
+      case TwoFactorAuthStatus.IDLE:
+        return <SvgWarningCircle />;
+      case TwoFactorAuthStatus.PENDING:
+        return <SvgWarningCircle />;
+      case TwoFactorAuthStatus.SUCCESS:
+        return <SvgCheckCircle />;
+      case TwoFactorAuthStatus.ERROR:
+        return <SvgErrorCircle />;
+      default:
+        return <SvgWarningCircle />;
+    }
   };
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.title}>{t('twoFactorAuth.title')}</h2>
-      <p className={styles.description}>{t('twoFactorAuth.description')}</p>
-      <form onSubmit={handleVerify}>
+    <div className="two-factor-auth">
+      <h2>Two-Factor Authentication</h2>
+      {getIcon()}
+      <p>
+        {twoFactorAuth && twoFactorAuth.enabled
+          ? 'Enter the verification code sent to your email or phone.'
+          : 'Two-factor authentication is not enabled for this account.'}
+      </p>
+      {status === TwoFactorAuthStatus.PENDING && (
         <input
           type="text"
           value={code}
-          onChange={handleCodeChange}
-          placeholder={t('twoFactorAuth.codePlaceholder')}
-          className={styles.input}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Verification code"
         />
-        <button type="submit" disabled={isSubmitting} className={styles.button}>
-          {t('twoFactorAuth.verifyButton')}
-        </button>
-      </form>
-      {statusIcon && (
-        <div className={styles.statusIconContainer}>
-          <SvgIcon component={statusIcon} />
-        </div>
       )}
+      {status === TwoFactorAuthStatus.PENDING && (
+        <button onClick={handleVerify}>Verify</button>
+      )}
+      {status === TwoFactorAuthStatus.ERROR && (
+        <button onClick={handleResend}>Resend code</button>
+      )}
+      {error && <p className="error">{error}</p>}
     </div>
   );
 };
