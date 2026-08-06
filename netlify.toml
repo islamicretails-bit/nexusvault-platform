@@ -1,0 +1,62 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "functions"
+
+[dev]
+  command = "npm run start"
+  port = 3000
+
+[context.deploy-preview]
+  command = "npm run build:preview"
+  publish = "dist/preview"
+
+[context.branch-deploy]
+  command = "npm run build:branch"
+  publish = "dist/branch"
+
+[context.production]
+  command = "npm run build:production"
+  publish = "dist/production"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+
+[redirects]
+  from = "/old-path"
+  to = "/new-path"
+  status = 301
+
+[redirects]
+  from = "/api/old-path"
+  to = "/api/new-path"
+  status = 301
+
+[redirects]
+  from = "/admin/old-path"
+  to = "/admin/new-path"
+  status = 301
