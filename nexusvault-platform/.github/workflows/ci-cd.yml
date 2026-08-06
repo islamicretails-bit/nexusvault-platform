@@ -1,0 +1,114 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Build web application
+        run: |
+          npm run build:web
+
+      - name: Build API server
+        run: |
+          npm run build:api
+
+      - name: Run unit tests
+        run: |
+          npm run test:unit
+
+      - name: Run integration tests
+        run: |
+          npm run test:integration
+
+      - name: Build and push Docker images
+        run: |
+          docker build -t nexusvault-platform/web -f docker/Dockerfile.web .
+          docker build -t nexusvault-platform/api -f docker/Dockerfile.api .
+          docker tag nexusvault-platform/web:latest ${{ secrets.DOCKER_USERNAME }}/nexusvault-platform/web:latest
+          docker tag nexusvault-platform/api:latest ${{ secrets.DOCKER_USERNAME }}/nexusvault-platform/api:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/nexusvault-platform/web:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/nexusvault-platform/api:latest
+
+      - name: Deploy to production
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USERNAME }}
+          key: ${{ secrets.PRODUCTION_PRIVATE_KEY }}
+          source: "."
+          target: "/var/www/nexusvault-platform"
+
+      - name: Restart services
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USERNAME }}
+          key: ${{ secrets.PRODUCTION_PRIVATE_KEY }}
+          script: |
+            sudo systemctl restart nexusvault-platform-web
+            sudo systemctl restart nexusvault-platform-api
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USERNAME }}
+          key: ${{ secrets.PRODUCTION_PRIVATE_KEY }}
+          script: |
+            curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+            curl -s -o /dev/null -w "%{http_code}" http://localhost:3001
+
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Run security audit
+        run: |
+          npm run audit:security
+
+      - name: Run vulnerability scan
+        run: |
+          npm run scan:vulnerabilities
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Run code quality checks
+        run: |
+          npm run lint
+          npm run format
+
+      - name: Run code coverage
+        run: |
+          npm run test:coverage
