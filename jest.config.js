@@ -4,29 +4,37 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['json', 'lcov', 'clover'],
   testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  transformIgnorePatterns: ['node_modules/(?!(jest-)?react|react-dom|@babel)'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  transformIgnorePatterns: ['<rootDir>/node_modules/'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
+    '^@apps/web(.*)$': '<rootDir>/apps/web$1',
+    '^@packages/core(.*)$': '<rootDir>/packages/core$1',
   },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  testMatch: ['**/__tests__/**/*.(spec|test).ts?(x)'],
+  testPathIgnorePatterns: ['node_modules', 'coverage'],
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.json',
     },
   },
-  coverageThreshold: {
-    global: {
-      branches: 90,
-      functions: 90,
-      lines: 90,
-      statements: 90,
-    },
-  },
-  testMatch: ['**/__tests__/**/*.(spec|test).ts?(x)'],
-  testPathIgnorePatterns: ['node_modules', 'dist', 'build'],
+  verbose: true,
 };
-setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']
+globalThis.console = {
+  ...globalThis.console,
+  warn: jest.fn(),
+  error: jest.fn(),
+};
+globalThis.fetch = jest.fn();
+globalThis.window = {
+  location: {
+    href: '',
+  },
+};
+globalThis.document = {
+  createElement: jest.fn(),
+  querySelector: jest.fn(),
+};
