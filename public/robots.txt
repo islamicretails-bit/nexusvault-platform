@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /download/
+Allow: /sitemap.xml
+Allow: /static/
+Crawl-delay: 10
+Sitemap: https://nexusvault-platform.com/sitemap.xml
