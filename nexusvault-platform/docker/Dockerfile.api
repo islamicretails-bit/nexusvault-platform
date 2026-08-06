@@ -1,0 +1,23 @@
+FROM node:16
+
+# Set working directory to /app
+WORKDIR /app
+
+# Copy package*.json files to /app
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy application code to /app
+COPY . .
+
+# Expose port 3000 for the API
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV production
+ENV PORT 3000
+
+# Run command to start the API
+CMD ["npm", "start"]
