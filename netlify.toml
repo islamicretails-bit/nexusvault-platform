@@ -5,21 +5,28 @@
 [functions]
   directory = "apps/web/functions"
 
-[env]
-  NEXUSVAULT_ENV = "production"
-  NEXT_PUBLIC_NEXUSVAULT_API_URL = "https://api.nexusvault.io"
-
 [[headers]]
   for = "/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Headers = "Content-Type"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "same-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; object-src 'none'"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+
+[context.deploy-preview]
+  command = "npm run build"
+  publish = "apps/web/out"
+
+[context.branch-deploy]
+  command = "npm run build"
+  publish = "apps/web/out"
+
+[context.production]
+  command = "npm run build"
+  publish = "apps/web/out"
