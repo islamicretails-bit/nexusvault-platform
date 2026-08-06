@@ -1,22 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import classNames from 'classnames';
-import './ErrorBoundary.scss';
+import classnames from 'classnames';
+import styles from './ErrorBoundary.module.css';
 
 class ErrorBoundary extends Component {
-  static propTypes = {
-    children: PropTypes.node.isRequired,
-  };
-
-  static defaultProps = {
-    children: null,
-  };
-
   constructor(props) {
     super(props);
     this.state = { hasError: false };
   }
+
+  static propTypes = {
+    children: PropTypes.node.isRequired,
+  };
 
   static getDerivedStateFromError(error) {
     return { hasError: true };
@@ -29,24 +25,20 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="error-boundary">
-          <div className="error-boundary__container">
-            <div className="error-boundary__header">
-              <h1 className="error-boundary__title">Something went wrong</h1>
-              <p className="error-boundary__description">
-                We're sorry, but it looks like something went wrong. Please try again later.
-              </p>
-            </div>
-            <div className="error-boundary__actions">
-              <Link to="/" className="error-boundary__button">
-                Back to Home
-              </Link>
-            </div>
-            <div className="error-boundary__ambient">
-              <div className="error-boundary__ambient-circle" />
-              <div className="error-boundary__ambient-circle" />
-              <div className="error-boundary__ambient-circle" />
-            </div>
+        <div className={classnames(styles.errorBoundary, styles.fadeIn)}>
+          <div className={styles.errorContainer}>
+            <h1 className={styles.errorTitle}>Something went wrong</h1>
+            <p className={styles.errorDescription}>
+              We're sorry, but it looks like something went wrong. Please try again later or contact our support team.
+            </p>
+            <Link to="/" className={styles.errorLink}>
+              Back to Home
+            </Link>
+          </div>
+          <div className={styles.errorAmbient}>
+            <div className={styles.errorAmbientItem} />
+            <div className={styles.errorAmbientItem} />
+            <div className={styles.errorAmbientItem} />
           </div>
         </div>
       );
