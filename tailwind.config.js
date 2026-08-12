@@ -1,0 +1,150 @@
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./src/app/**/*.{js,jsx,ts,tsx}",
+    "./src/components/**/*.{js,jsx,ts,tsx}",
+    "./src/lib/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: "#0B0F17",
+        secondary: "#1A1D23",
+        accent: "#16A085",
+        success: "#2ecc71",
+        warning: "#f1c40f",
+        error: "#e74c3c",
+      },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        serif: ["Merriweather", "serif"],
+      },
+      fontSize: {
+        xs: "0.75rem",
+        sm: "0.875rem",
+        base: "1rem",
+        md: "1.125rem",
+        lg: "1.25rem",
+        xl: "1.5rem",
+        "2xl": "1.75rem",
+        "3xl": "2rem",
+        "4xl": "2.25rem",
+        "5xl": "2.5rem",
+        "6xl": "2.75rem",
+      },
+      lineHeight: {
+        none: "1",
+        tight: "1.25",
+        normal: "1.5",
+        relaxed: "1.75",
+      },
+      spacing: {
+        px: "1px",
+        0: "0",
+        0.5: "0.125rem",
+        1: "0.25rem",
+        1.5: "0.375rem",
+        2: "0.5rem",
+        2.5: "0.625rem",
+        3: "0.75rem",
+        3.5: "0.875rem",
+        4: "1rem",
+        5: "1.25rem",
+        6: "1.5rem",
+        7: "1.75rem",
+        8: "2rem",
+        9: "2.25rem",
+        10: "2.5rem",
+        11: "2.75rem",
+        12: "3rem",
+        14: "3.5rem",
+        16: "4rem",
+        20: "5rem",
+        24: "6rem",
+        28: "7rem",
+        32: "8rem",
+        36: "9rem",
+        40: "10rem",
+        44: "11rem",
+        48: "12rem",
+        52: "13rem",
+        56: "14rem",
+        60: "15rem",
+        64: "16rem",
+        72: "18rem",
+        80: "20rem",
+        96: "24rem",
+      },
+      borderRadius: {
+        none: "0",
+        sm: "0.125rem",
+        md: "0.25rem",
+        lg: "0.5rem",
+        xl: "0.75rem",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        full: "9999px",
+      },
+      boxShadow: {
+        xs: "0 0 0 1px rgba(0, 0, 0, 0.05)",
+        sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        "3xl": "0 35px 60px -15px rgba(0, 0, 0, 0.3)",
+        inner: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
+        outline: "0 0 0 3px rgba(66, 153, 225, 0.5)",
+      },
+      keyframes: {
+        shimmer: {
+          "0%": {
+            transform: "translateX(-100%)",
+          },
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
+        "glow-pulse": {
+          "0%, 100%": {
+            opacity: 1,
+          },
+          "50%": {
+            opacity: 0.4,
+          },
+        },
+        float: {
+          "0%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+          "100%": {
+            transform: "translateY(0px)",
+          },
+        },
+        "radar-sweep": {
+          "0%": {
+            transform: "rotate(0deg)",
+          },
+          "100%": {
+            transform: "rotate(360deg)",
+          },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 2s infinite",
+        "glow-pulse": "glow-pulse 2s infinite",
+        float: "float 2s infinite",
+        "radar-sweep": "radar-sweep 2s infinite",
+      },
+    },
+  },
+  plugins: [
+    require("@tailwindcss/typography"),
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/aspect-ratio"),
+  ],
+};
