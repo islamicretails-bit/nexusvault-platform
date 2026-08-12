@@ -1,0 +1,67 @@
+{
+  "version": 2,
+  "env": {
+    "ADMIN_OFFICE_PASSCODE": "@admin_office_passcode",
+    "BARCLAYS_IBAN": "@barclays_iban",
+    "CITIBANK_WIRE_DETAILS": "@citibank_wire_details",
+    "JAZZCASH_INSTANT_ID": "@jazzcash_instant_id",
+    "EASYPAY_INSTANT_ID": "@easypay_instant_id",
+    "RAAST_INSTANT_ID": "@raast_instant_id",
+    "CLOUDFLARE_R2_KEYS": "@cloudflare_r2_keys",
+    "MULTI_AI_API_KEYS": "@multi_ai_api_keys",
+    "CRON_SECRET": "@cron_secret"
+  },
+  "builds": [
+    {
+      "src": "src/app/**/*",
+      "dest": "public"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/cron/auto-generate",
+      "dest": "src/app/api/cron/auto-generate/route.ts"
+    },
+    {
+      "src": "/api/ai/generate-product",
+      "dest": "src/app/api/ai/generate-product/route.ts"
+    },
+    {
+      "src": "/api/ai/admin-command",
+      "dest": "src/app/api/ai/admin-command/route.ts"
+    },
+    {
+      "src": "/api/payments/checkout",
+      "dest": "src/app/api/payments/checkout/route.ts"
+    },
+    {
+      "src": "/api/payments/verify-receipt",
+      "dest": "src/app/api/payments/verify-receipt/route.ts"
+    },
+    {
+      "src": "/api/admin/analytics",
+      "dest": "src/app/api/admin/analytics/route.ts"
+    },
+    {
+      "src": "/api/downloads/secure",
+      "dest": "src/app/api/downloads/secure/route.ts"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; object-src 'none'"
+        }
+      ]
+    }
+  ],
+  "cron": [
+    {
+      "schedule": "0 0 */6 * *",
+      "function": "src/app/api/cron/auto-generate/route.ts"
+    }
+  ]
+}
