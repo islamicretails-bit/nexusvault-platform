@@ -1,20 +1,5 @@
 {
-  "name": "nexusvault-platform",
+  "name": "project",
   "version": "1.0.0",
-  "scripts": {
-    "build": "npm run build:web",
-    "build:web": "cd apps/web && npm run build",
-    "start": "npm run start:web",
-    "start:web": "cd apps/web && npm run start",
-    "test": "npm run test:web",
-    "test:web": "cd apps/web && npm run test"
-  },
-  "dependencies": {
-    "@netlify/cli": "^9.1.1",
-    "netlify": "^9.1.1"
-  },
-  "devDependencies": {
-    "@types/node": "^18.11.18",
-    "npm": "^9.2.0"
-  }
+  "private": true
 }
