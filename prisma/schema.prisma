@@ -19,11 +19,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  orders      Order[]
-  orderItems   OrderItem[]
-  licenses     License[]
-  payments     PaymentReceipt[]
-  analytics   AnalyticsLog[]
+  orders    Order[]
+  orderItems OrderItem[]
+  licenses  License[]
+  payments  PaymentReceipt[]
+  analytics AnalyticsLog[]
   customRequests CustomRequest[]
 }
 
@@ -39,30 +39,38 @@ model Product {
   title       String
   description String
   price       Float
-  currency    String
+  currency    String   @default(USD)
+  rating      Float    @default(0)
+  totalDownloads Int    @default(0)
   categories  String[]
-  rating      Float
-  totalDownloads Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  orders      Order[]
-  orderItems   OrderItem[]
-  licenses     License[]
-  analytics   AnalyticsLog[]
+  orders    Order[]
+  orderItems OrderItem[]
+  licenses  License[]
+  analytics AnalyticsLog[]
+}
+
+enum Currency {
+  USD
+  GBP
+  PKR
+  EUR
 }
 
 model Order {
   id         String   @id @default(cuid())
   userId     String
   user       User     @relation(fields: [userId], references: [id])
-  status     OrderStatus
+  status     OrderStatus @default(PENDING)
   tax        Float
   geoIp      String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  orderItems   OrderItem[]
+  orderItems OrderItem[]
+  payment    PaymentReceipt?
 }
 
 enum OrderStatus {
@@ -72,14 +80,14 @@ enum OrderStatus {
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  orderId     String
-  order       Order     @relation(fields: [orderId], references: [id])
-  productId   String
-  product     Product   @relation(fields: [productId], references: [id])
-  quantity    Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id       String   @id @default(cuid())
+  orderId  String
+  order    Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model License {
@@ -90,22 +98,20 @@ model License {
   product    Product  @relation(fields: [productId], references: [id])
   token      String
   fingerprint String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PaymentReceipt {
   id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
   orderId    String
   order      Order    @relation(fields: [orderId], references: [id])
   paymentMethod String
   amount     Float
-  currency   String
-  status     PaymentStatus
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  currency   String   @default(USD)
+  status     PaymentStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum PaymentStatus {
@@ -115,29 +121,29 @@ enum PaymentStatus {
 }
 
 model AnalyticsLog {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
-  ip         String
-  referrer  String
-  path       String
-  duration   Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  ip       String
+  referrer String
+  path     String
+  duration Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CustomRequest {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
-  message    String
-  status     CustomRequestStatus
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quote     String
+  status    CustomRequestStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum CustomRequestStatus {
@@ -147,19 +153,24 @@ enum CustomRequestStatus {
 }
 
 model SiteConfig {
-  id         String   @id @default(cuid())
-  theme      String
-  banners    String[]
+  id       String   @id @default(cuid())
+  theme    String   @default(DARK)
+  banners  String[]
   navigation String[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Theme {
+  DARK
+  LIGHT
 }
 
 model AutoPipelineLog {
-  id         String   @id @default(cuid())
-  log        String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id       String   @id @default(cuid())
+  log      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 index userId on Order(userId)
@@ -167,7 +178,6 @@ index orderId on OrderItem(orderId)
 index productId on OrderItem(productId)
 index userId on License(userId)
 index productId on License(productId)
-index userId on PaymentReceipt(userId)
 index orderId on PaymentReceipt(orderId)
 index userId on AnalyticsLog(userId)
 index productId on AnalyticsLog(productId)
