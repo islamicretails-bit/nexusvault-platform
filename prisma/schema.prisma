@@ -1,0 +1,175 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  role     Role     @default(CUSTOMER)
+  isVerified Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders      Order[]
+  orderItems   OrderItem[]
+  licenses     License[]
+  payments     PaymentReceipt[]
+  analytics   AnalyticsLog[]
+  customRequests CustomRequest[]
+}
+
+enum Role {
+  ADMIN
+  VENDOR
+  CUSTOMER
+  AFFILIATE
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  price       Float
+  currency    String
+  categories  String[]
+  rating      Float
+  totalDownloads Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders      Order[]
+  orderItems   OrderItem[]
+  licenses     License[]
+  analytics   AnalyticsLog[]
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  status     OrderStatus
+  tax        Float
+  geoIp      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orderItems   OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId     String
+  order       Order     @relation(fields: [orderId], references: [id])
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  quantity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model License {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  token      String
+  fingerprint String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PaymentReceipt {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  paymentMethod String
+  amount     Float
+  currency   String
+  status     PaymentStatus
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model AnalyticsLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  ip         String
+  referrer  String
+  path       String
+  duration   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CustomRequest {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  message    String
+  status     CustomRequestStatus
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum CustomRequestStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+model SiteConfig {
+  id         String   @id @default(cuid())
+  theme      String
+  banners    String[]
+  navigation String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AutoPipelineLog {
+  id         String   @id @default(cuid())
+  log        String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+index userId on Order(userId)
+index orderId on OrderItem(orderId)
+index productId on OrderItem(productId)
+index userId on License(userId)
+index productId on License(productId)
+index userId on PaymentReceipt(userId)
+index orderId on PaymentReceipt(orderId)
+index userId on AnalyticsLog(userId)
+index productId on AnalyticsLog(productId)
+index userId on CustomRequest(userId)
+index productId on CustomRequest(productId)
